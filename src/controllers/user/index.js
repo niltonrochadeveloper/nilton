@@ -1,38 +1,50 @@
 const jwt = require("jsonwebtoken");
 
-const user = {
-  name: "admin",
-  email: "admin@spsgroup.com.br",
-  type: "admin",
-  password: "1234",
-};
+const users = [
+  {
+    id: 1,
+    name: "admin",
+    email: "admin@spsgroup.com.br",
+    type: "admin",
+    password: "1234",
+  },
+  {
+    id: 2,
+    name: "user",
+    email: "user@spsgroup.com.br",
+    type: "user",
+    password: "1234",
+  },
+];
 
 const userController = {
   users: (req, res) => {
     res.status(200).json({
       status: 200,
       result: {
-        user: user,
+        users,
       },
     });
   },
-  findUser: (req, res) => {
-    const { email } = req.params;
-    if (email === user.email) {
+  findUser: async (req, res) => {
+    const user = users.filter((user) => user.id == req.params.id);
+    if (req.params.id && user.length > 0) {
       res.status(200).json({
         status: 200,
-        result: user,
+        result: {
+          user,
+        },
       });
     } else {
       res.status(401).json({
         status: 401,
         errors: {
-          message: "usuário não existe",
+          message: "Id de usuário não existe",
         },
       });
     }
   },
-  create: (req, res) => {
+  create: async (req, res) => {
     const { name, email, password } = req.body;
 
     const errors = [];
@@ -56,55 +68,61 @@ const userController = {
         errors,
       });
     } else {
+      const countUsers = users.length;
+      users.push({
+        id: countUsers + 1,
+        name: req.body.name,
+        email: req.body.email,
+        type: "user",
+        password: password,
+      });
       return res.status(200).json({
         status: 200,
         result: {
-          user: {
-            name: req.body.name,
-            email: req.body.email,
-            type: "user",
-            password: "**********",
-          },
+          user: users[countUsers - 1],
         },
       });
     }
   },
   remove: (req, res) => {
-    const { email } = req.params;
-    if (email === user.email) {
+    const userToRemove = users.filter((user) => user.id == req.params.id);
+    if (req.params.id >= 0 && userToRemove.length > 0) {
+      users.splice(userToRemove, 1);
+
       res.status(200).json({
         status: 200,
-        result: `${email} deletado`,
+        result: `Usuário deletado com sucesso`,
       });
     } else {
       res.status(401).json({
         status: 401,
         errors: {
-          message: "Email não existe",
+          message: "Erro ao tentar deletar usuário!",
         },
       });
     }
   },
   update: (req, res) => {
     const { id } = req.params;
-    const { name, email, type, password } = req.params;
-    if (id === user.id) {
+    const { name, email, type, password } = req.body;
+    const userToUpdate = users.filter((user) => user.id == req.params.id);
+    if (req.params.id >= 0 && userToUpdate.length > 0) {
+      if (name) users[id - 1].name = name;
+      if (email) users[id - 1].email = email;
+      if (type) users[id - 1].type = type;
+      if (password) users[id - 1].password = password;
+
       res.status(200).json({
         status: 200,
         result: {
-          user: {
-            name: name ? name : "admin",
-            email: email ? email : "admin@spsgroup.com.br",
-            type: type ? type : "admin",
-            password: password ? password : "1234",
-          },
+          user: userToUpdate,
         },
       });
     } else {
       res.status(401).json({
         status: 401,
         errors: {
-          message: "Email não existe",
+          message: "Erro ao tentar atualizar usuário!",
         },
       });
     }
