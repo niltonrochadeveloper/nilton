@@ -22,7 +22,7 @@ const verifyToken = (req, res, next) => {
     next();
   } catch (err) {
     console.error(err.message);
-    res.status(400).json({ errors: "Token inválido!" });
+    res.status(401).json({ status: 401, errors: "Token inválido!" });
   }
 };
 

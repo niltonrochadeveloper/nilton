@@ -49,6 +49,11 @@ const userController = {
 
     const errors = [];
 
+    const userExists = users.find((user) => user.email == email);
+
+    if (userExists) {
+      errors.push("Email já existe! Tente outro!");
+    }
     if (!name || typeof name === "undefined" || name.length === 0) {
       errors.push("Campo Name não pode ser vazio!");
     }
